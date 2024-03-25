@@ -15,7 +15,7 @@ runs:
   using: "composite"
   steps:
     - name: Resolve Helm Chart Dependencies
-      uses: launchbynttdata/actions-helm-resolve_dependencies@2194976ad939dcfe4c595ba247c6d2e41e552c68
+      uses: launchbynttdata/actions-helm-resolve_dependencies@4da0f57d6c15986c5ab9ff102de4a443bb459816
       with:
         chart_path: ${{ inputs.test_path }}
 
