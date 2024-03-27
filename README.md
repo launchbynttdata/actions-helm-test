@@ -30,6 +30,6 @@ To use this action, you need to provide the following input:
 * `value_file`: The path to the values file to be used for the test.
 * `kube_api_version`: The version of the Kubernetes API to be used when validating the output of the helm templates. Optional, default: 1.26.5.
 
-## Compatability
+## Compatibility
 
 This action has only been tested on GitHub.com.
