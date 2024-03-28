@@ -14,42 +14,40 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Resolve Helm Chart Dependencies
+      uses: launchbynttdata/actions-helm-resolve_dependencies@v0
+      with:
+        chart_path: ${{ inputs.test_path }}
 
-  - name: Resolve Helm Chart Dependencies
-    working-directory: ${{ inputs.test_path }}
-    uses: launchbynttdata/actions-helm-resolve_dependencies@v0
-    with:
-      chart_path: ${{ inputs.test_path }}
+    - name: Lint Helm Chart
+      working-directory: ${{ inputs.test_path }}
+      shell: bash
+      run: |
+        helm lint .  --values ${{ inputs.value_file }}
 
-  - name: Lint Helm Chart
-    working-directory: ${{ inputs.test_path }}
-    shell: bash
-    run: |
-      helm lint .  --values ${{ inputs.value_file }}
+    - name: Build Helm Template
+      working-directory: ${{ inputs.test_path }}
+      shell: bash
+      run: |
+        mkdir -p output
+        helm template . --values ${{ inputs.value_file }} --output-dir ./output
 
-  - name: Build Helm Template
-    working-directory: ${{ inputs.test_path }}
-    shell: bash
-    run: |
-      mkdir -p output
-      helm template . --values ${{ inputs.value_file }} --output-dir ./output
+    - name: Validate Helm Chart
+      working-directory: ${{ inputs.test_path }}
+      shell: bash
+      run: |
+        kubeconform -strict -summary -kubernetes-version ${{ inputs.kube_api_version }} -exit-on-error ./output
 
-  - name: Validate Helm Chart
-    working-directory: ${{ inputs.test_path }}
-    shell: bash
-    run: |
-      kubeconform -strict -summary -kubernetes-version ${{ inputs.kube_api_version }} -exit-on-error ./output
+    - name: Output charts
+      working-directory: ${{ inputs.test_path }}
+      shell: bash
+      run: |
+        for file in $(find ./output -type f -name "*.yaml"); do
+          echo $file; echo; echo; cat $file; echo; echo;
+        done
 
-  - name: Output charts
-    working-directory: ${{ inputs.test_path }}
-    shell: bash
-    run: |
-      for file in $(find ./output -type f -name "*.yaml"); do
-        echo $file; echo; echo; cat $file; echo; echo;
-      done
-
-  - name: cleanup
-    working-directory: ${{ inputs.test_path }}
-    shell: bash
-    run: |
-      rm -rf ${{ inputs.test_path }}/output
+    - name: cleanup
+      working-directory: ${{ inputs.test_path }}
+      shell: bash
+      run: |
+        rm -rf ${{ inputs.test_path }}/output
